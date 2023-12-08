@@ -24,11 +24,13 @@ pub(crate) fn is_async(method_signature: &Signature) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use syn::{parse_quote, ItemFn};
+
     use super::*;
 
     #[test]
     fn with_async_keyword() {
-        let method: syn::ItemFn = syn::parse_quote! {
+        let method: ItemFn = parse_quote! {
             async fn foo() {}
         };
 
@@ -37,7 +39,7 @@ mod tests {
 
     #[test]
     fn returns_future() {
-        let method: syn::ItemFn = syn::parse_quote! {
+        let method: ItemFn = parse_quote! {
             fn foo() -> impl Future<Output = ()> {}
         };
 
@@ -46,7 +48,7 @@ mod tests {
 
     #[test]
     fn returns_future2() {
-        let method: syn::ItemFn = syn::parse_quote! {
+        let method: ItemFn = parse_quote! {
             fn foo() -> impl std::future::Future<Output = ()> {}
         };
 
@@ -55,7 +57,7 @@ mod tests {
 
     #[test]
     fn does_not_return_future() {
-        let method: syn::ItemFn = syn::parse_quote! {
+        let method: ItemFn = parse_quote! {
             fn foo() -> i32 {}
         };
 

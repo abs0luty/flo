@@ -1,11 +1,14 @@
 //! Remove attributes from generated code, after the `api` macro was
 //! expanded.
 
-use syn::visit_mut::{self, VisitMut};
+use syn::{
+    visit_mut::{self, VisitMut},
+    Attribute, FnArg, ImplItemFn, TraitItemFn,
+};
 
 pub(crate) struct RemoveAttrsVisitMut;
 
-fn remove_endpoint_attrs(attrs: &mut Vec<syn::Attribute>) {
+fn remove_endpoint_attrs(attrs: &mut Vec<Attribute>) {
     attrs.retain(|a| {
         !a.meta.path().is_ident("get")
             && !a.meta.path().is_ident("post")
@@ -16,7 +19,7 @@ fn remove_endpoint_attrs(attrs: &mut Vec<syn::Attribute>) {
     });
 }
 
-fn remove_param_attrs(attrs: &mut Vec<syn::Attribute>) {
+fn remove_param_attrs(attrs: &mut Vec<Attribute>) {
     attrs.retain(|a| {
         !a.meta.path().is_ident("body")
             && !a.meta.path().is_ident("query_param")
@@ -27,19 +30,19 @@ fn remove_param_attrs(attrs: &mut Vec<syn::Attribute>) {
 }
 
 impl VisitMut for RemoveAttrsVisitMut {
-    fn visit_trait_item_fn_mut(&mut self, i: &mut syn::TraitItemFn) {
+    fn visit_trait_item_fn_mut(&mut self, i: &mut TraitItemFn) {
         remove_endpoint_attrs(&mut i.attrs);
 
         visit_mut::visit_trait_item_fn_mut(self, i);
     }
 
-    fn visit_impl_item_fn_mut(&mut self, i: &mut syn::ImplItemFn) {
+    fn visit_impl_item_fn_mut(&mut self, i: &mut ImplItemFn) {
         remove_endpoint_attrs(&mut i.attrs);
 
         visit_mut::visit_impl_item_fn_mut(self, i);
     }
 
-    fn visit_fn_arg_mut(&mut self, i: &mut syn::FnArg) {
+    fn visit_fn_arg_mut(&mut self, i: &mut FnArg) {
         if let syn::FnArg::Typed(i) = i {
             remove_param_attrs(&mut i.attrs);
         }

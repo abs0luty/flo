@@ -2,15 +2,15 @@
 
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote, visit_mut::VisitMut};
+use syn::{parse_quote, visit_mut::VisitMut, Ident, ImplItemFn, ItemTrait, TraitItemFn};
 
 use crate::{endpoint::EndpointAttr, remove_attrs::RemoveAttrsVisitMut};
 
 pub(crate) fn expand_api_macro(
-    api_client_struct_name: syn::Ident,
-    api_trait_name: syn::Ident,
-    methods: Vec<(syn::TraitItemFn, EndpointAttr)>,
-    mut item_trait: syn::ItemTrait,
+    api_client_struct_name: Ident,
+    api_trait_name: Ident,
+    methods: Vec<(TraitItemFn, EndpointAttr)>,
+    mut item_trait: ItemTrait,
 ) -> TokenStream {
     let mut expanded = TokenStream::new();
 
@@ -27,9 +27,9 @@ pub(crate) fn expand_api_macro(
 }
 
 fn generate_api_trait_impl(
-    api_client_struct_name: &syn::Ident,
-    api_trait_name: &syn::Ident,
-    methods: impl IntoIterator<Item = (syn::TraitItemFn, EndpointAttr)>,
+    api_client_struct_name: &Ident,
+    api_trait_name: &Ident,
+    methods: impl IntoIterator<Item = (TraitItemFn, EndpointAttr)>,
 ) -> TokenStream {
     let mut api_client_methods = TokenStream::new();
     for (method, endpoint_attr) in methods {
@@ -44,7 +44,7 @@ fn generate_api_trait_impl(
     }
 }
 
-fn generate_api_client_struct(api_client_struct_name: &syn::Ident) -> TokenStream {
+fn generate_api_client_struct(api_client_struct_name: &Ident) -> TokenStream {
     quote! {
         struct #api_client_struct_name {
             client: reqwest::Client,
@@ -114,14 +114,14 @@ fn generate_api_client_struct(api_client_struct_name: &syn::Ident) -> TokenStrea
 }
 
 fn generate_api_client_method_impl(
-    method: syn::TraitItemFn,
+    method: TraitItemFn,
     endpoint_attr: EndpointAttr,
 ) -> TokenStream {
     let http_method_name = endpoint_attr.method().snake_case_ident();
     let method_name = &method.sig.ident;
     let uri = endpoint_attr.uri();
 
-    let mut generated_method: syn::ImplItemFn = parse_quote! {
+    let mut generated_method: ImplItemFn = parse_quote! {
         async fn #method_name(&self) {
             let url = format!("{}/{}", self.base_url, #uri);
 
