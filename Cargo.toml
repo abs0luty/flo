@@ -1,0 +1,19 @@
+[package]
+name = "flo"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dev-dependencies]
+reqwest = "0.11"
+base64 = "0.21"
+tokio = "1.28"
+async-trait = "0.1"
+
+[dependencies]
+proc-macro2 = "1.0.40"
+quote = "1.0.20"
+syn = { version = "2.0.39", features = ["full"] }
+paste = "1.0.14"
