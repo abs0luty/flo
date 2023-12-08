@@ -1,9 +1,11 @@
 use endpoint_attr::EndpointAttr;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, parse_quote};
+use remove_attrs::RemoveAttrs;
+use syn::{parse_macro_input, parse_quote, visit_mut::VisitMut};
 
 mod endpoint_attr;
+mod remove_attrs;
 
 /// ```
 /// #[api(TestApiClient)]
@@ -109,10 +111,11 @@ fn expand_api_macro(
     api_client_struct_name: syn::Ident,
     api_trait_name: syn::Ident,
     methods: Vec<(syn::TraitItemFn, EndpointAttr)>,
-    item_trait: syn::ItemTrait,
+    mut item_trait: syn::ItemTrait,
 ) -> TokenStream {
     let mut expanded = TokenStream::new();
 
+    RemoveAttrs.visit_item_trait_mut(&mut item_trait);
     expanded.extend(item_trait.into_token_stream());
     expanded.extend(generate_api_client_struct(&api_client_struct_name));
     expanded.extend(generate_api_trait_impl(
@@ -175,11 +178,16 @@ fn generate_api_client_struct(api_client_struct_name: &syn::Ident) -> TokenStrea
                 self
             }
 
-            pub fn with_basic_auth(mut self, username: impl Display, password: impl Display) -> Self {
+            pub fn with_basic_auth(mut self,
+                username: impl std::fmt::Display,
+                password: impl std::fmt::Display) -> Self {
+                use base64::Engine;
+
                 self.default_headers
                     .insert(reqwest::header::AUTHORIZATION, reqwest::header::HeaderValue::from_str(
-                        &format!("Basic {}", base64::encode(format!("{username}:{password}"))))
-                        .unwrap());
+                        &format!("Basic {}", base64::engine::general_purpose::STANDARD
+                            .encode(format!("{username}:{password}"))
+                        )).unwrap());
                 self
             }
 
@@ -199,7 +207,7 @@ fn generate_api_client_struct(api_client_struct_name: &syn::Ident) -> TokenStrea
 
             #[inline]
             #[must_use]
-            pub const fn base_url(&self) -> &str {
+            pub fn base_url(&self) -> &str {
                 &self.base_url
             }
         }
@@ -214,7 +222,7 @@ fn generate_api_client_method_impl(
     let method_name = &method.sig.ident;
     let uri = endpoint_attr.uri();
 
-    let mut generated_method: syn::ItemFn = parse_quote! {
+    let mut generated_method: syn::ImplItemFn = parse_quote! {
         async fn #method_name(&self) {
             let url = format!("{}/{}", self.base_url, #uri);
 
@@ -227,5 +235,6 @@ fn generate_api_client_method_impl(
     };
 
     generated_method.sig = method.sig;
+    RemoveAttrs.visit_impl_item_fn_mut(&mut generated_method);
     generated_method.into_token_stream()
 }

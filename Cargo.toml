@@ -7,13 +7,14 @@ edition = "2021"
 proc-macro = true
 
 [dev-dependencies]
-reqwest = "0.11"
+reqwest = { version = "0.11", features = ["json"] }
 base64 = "0.21"
-tokio = "1.28"
+tokio = { version = "1.28", features = ["macros", "rt", "rt-multi-thread"] }
 async-trait = "0.1"
+serde = { version = "1.0.193", features = ["derive"] }
 
 [dependencies]
 proc-macro2 = "1.0.40"
 quote = "1.0.20"
-syn = { version = "2.0.39", features = ["full"] }
+syn = { version = "2.0.39", features = ["full", "visit-mut"] }
 paste = "1.0.14"
