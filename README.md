@@ -27,7 +27,7 @@ trait TaskApi {
     #[get("/tasks/{}")]
     async fn get_tasks(
         &self,
-        #[path] task_id: i32,
+        #[pat] task_id: i32,
     ) -> Result<Task, Error>;
 
     /// Creates a new task.
@@ -41,7 +41,7 @@ trait TaskApi {
     #[put("/tasks/{}")]
     async fn update_task(
         &self,
-        #[path] task_id: i32,
+        #[pat] task_id: i32,
         #[body] task: Task,
     ) -> Result<(), Error>;
 
@@ -49,11 +49,12 @@ trait TaskApi {
     #[delete("/tasks/{}")]
     async fn delete_task(
         &self,
-        #[path] task_id: i32,
+        #[pat] task_id: i32,
     ) -> Result<(), Error>;
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let client = TaskApiClient::new("localhost:3000")
         .with_basic_auth("username", "password")
         .with_default_header("test", true);
