@@ -20,14 +20,14 @@ trait TaskApi {
     #[get("/tasks")]
     async fn get_tasks(
         &self,
-        #[query] page: Option<i32>,
+        #[query_param] page: Option<i32>,
     ) -> Result<Vec<Task>, Error>;
 
     /// Returns information about a task with the given id.
     #[get("/tasks/{}")]
     async fn get_tasks(
         &self,
-        #[pat] task_id: i32,
+        #[path_param] task_id: i32,
     ) -> Result<Task, Error>;
 
     /// Creates a new task.
@@ -41,7 +41,7 @@ trait TaskApi {
     #[put("/tasks/{}")]
     async fn update_task(
         &self,
-        #[pat] task_id: i32,
+        #[path_param] task_id: i32,
         #[body] task: Task,
     ) -> Result<(), Error>;
 
@@ -49,7 +49,7 @@ trait TaskApi {
     #[delete("/tasks/{}")]
     async fn delete_task(
         &self,
-        #[pat] task_id: i32,
+        #[path_param] task_id: i32,
     ) -> Result<(), Error>;
 }
 
