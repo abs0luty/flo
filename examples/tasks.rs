@@ -3,7 +3,7 @@ use flo::api;
 use reqwest::{Error, Response};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Task {
     description: String,
 }
@@ -27,6 +27,12 @@ trait TaskApi {
 #[tokio::main]
 async fn main() {
     let client = TaskApiClient::new("localhost:3000").with_basic_auth("username", "password");
-    let tasks = client.get_all_tasks().await.unwrap().json::<Vec<Task>>();
+    let tasks = client
+        .get_all_tasks()
+        .await
+        .unwrap()
+        .json::<Vec<Task>>()
+        .await
+        .unwrap();
     client.delete_task(1).await.unwrap();
 }

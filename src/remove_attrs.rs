@@ -1,6 +1,9 @@
+//! Remove attributes from generated code, after the `api` macro was
+//! expanded.
+
 use syn::visit_mut::{self, VisitMut};
 
-pub(crate) struct RemoveAttrs;
+pub(crate) struct RemoveAttrsVisitMut;
 
 fn remove_endpoint_attrs(attrs: &mut Vec<syn::Attribute>) {
     attrs.retain(|a| {
@@ -23,7 +26,7 @@ fn remove_param_attrs(attrs: &mut Vec<syn::Attribute>) {
     })
 }
 
-impl VisitMut for RemoveAttrs {
+impl VisitMut for RemoveAttrsVisitMut {
     fn visit_trait_item_fn_mut(&mut self, i: &mut syn::TraitItemFn) {
         remove_endpoint_attrs(&mut i.attrs);
 

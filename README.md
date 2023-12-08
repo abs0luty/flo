@@ -1,14 +1,14 @@
 # Flo
 
-API clients made easy using Rust proc macros:
+Flo is API client generator proc macro crate for Rust. Here is example of how you would use the crate:
 
-```rs
+```rust
 use reqwest::{Error, Response};
 use serde::{Serialize, Deserialize};
 use flo::api;
 use async_trait::async_trait;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 struct Task {
     description: String,
 }
@@ -57,13 +57,19 @@ trait TaskApi {
 async fn main() {
     let client = TaskApiClient::new("localhost:3000")
         .with_basic_auth("username", "password")
-        .with_default_header("test", true);
+        .with_default_header("test_header", "test");
     client.create_task(Task { description: "test".to_owned() }).await.unwrap();
 
-    let tasks1 = client.get_tasks(0).await.unwrap().json::<Vec<Task>>();
+    let tasks1 = client.get_tasks(0).await.unwrap().json::<Vec<Task>>().await.unwrap();
     client.delete_task(0).await.unwrap();
 
-    let tasks2 = client.get_tasks(0).await.unwrap().json::<Vec<Task>>();
+    let tasks2 = client.get_tasks(0).await.unwrap().json::<Vec<Task>>().await.unwrap();
     assert_ne!(tasks1, tasks2);
 }
 ```
+
+To generate an API client, you need to create a trait with all the methods being related to actual API endpoints.
+
+Each endpoint must be annotated with `#[method(uri)]` attribute.
+
+The associated trait method must be `async` and must return `Result<reqwest::Response, reqwest::Error>`.
